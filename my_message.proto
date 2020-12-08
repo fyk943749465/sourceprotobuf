@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package com.shengsiyuan.protobuf;
+package generated;
 
 option optimize_for = SPEED;
 option java_package = "protobuf";
