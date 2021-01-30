@@ -1,0 +1,87 @@
+syntax="proto2";
+package generated;
+
+option java_package = "protobuf";
+option java_outer_classname = "ProtoMsg";
+
+enum HeadType {
+    LOGIN_REQUEST = 1;    // 登陆请求
+    LOGIN_RESPONSE = 2;   // 登陆响应
+    LOGOUT_REQUEST = 3;   // 退出请求
+    LOGOUT_RESPONSE = 4;  // 退出响应
+    KEEPALIVE_REQUEST = 5;//心跳请求PING
+    KEEPALIVE_RESPONSE = 6;
+    MESSAGE_REQUEST = 7;  //消息请求
+    MESSAGE_RESPONSE = 8; //消息回应
+    MESSAGE_NOTIFICATION = 9; //　通知消息
+}
+
+
+/*登录信息*/
+// LoginRequest对应的HeadType为Login_Request
+// 消息名称去掉下划线，更加符合JAVA的类名规范
+message LoginRequest {
+    required string uid = 1; //用户唯一id
+    required string deviceId = 2; //设备ID
+    required string token = 3; // 用户token
+    optional uint32 platform = 4; // 客户端平台　window mac android ios web
+    optional string app_version = 5; // app版本号
+}
+
+// token说明：帐号服务器登陆时生成token
+
+/*登陆响应*/
+message LoginResponse {
+
+    required bool result = 1; // true 表示成功, false表示失败
+    required uint32 code = 2; //错误码
+    required string info = 3; //错误描述
+    required uint32 expose = 4; //错误描述是否提示给用户，１提示，０不提示
+}
+
+/*聊天消息*/
+message MessageRequest {
+    required uint64 msg_id = 1; //消息id
+    required string from = 2;   //发送方sessionId
+    required string to = 3;     //接收方sessionId
+    required uint64 time = 4;   //时间戳（单位：毫秒）
+    required uint32 msg_type = 5; //消息类型　１：纯文本　２：音频　３：视频　４：地理位置　５：其他
+    optional string content = 6; //消息内容
+    optional string url = 7;   //多媒体地址
+    optional string property = 8; // 附加属性
+    optional string from_nick = 9;// 发送者昵称
+    optional string json = 10; //附加的json
+}
+
+/*聊天响应*/
+message MessageResponse {
+
+    required bool result = 1; // true表示发送成功　false表示发送失败
+    required uint32 code = 2; //错误码
+    required string info = 3; //错误描述
+    required uint32 expose = 4; //错误描述是否提示给用户：１提示　０不提示
+    required bool last_block = 5;
+    required fixed32 block_index = 6;
+}
+
+/* 通知消息 */
+message MessageNotification {
+    required uint32 msg_type = 1; //通知类型　１上线　２下线
+    required bytes  sender = 2;
+    required string json = 3;
+    required string timestamp = 4;
+}
+
+/* 顶层消息　*/
+// 顶层消息是一种嵌套消息，嵌套了各种类型消息
+//　内容的消息类型，全部使用optional字段
+// 根据消息类型，type的值，最多只有有一个有效
+message Message {
+    required HeadType type = 1; // 消息类型
+    required uint64 sequence = 2; // 消息系列号
+    optional LoginRequest loginRequest = 3;
+    optional LoginResponse loginResponse = 4;
+    optional MessageRequest messageRequest = 5;
+    optional MessageResponse messageResponse = 6;
+    optional MessageNotification notification = 8;
+}
